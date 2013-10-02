@@ -16,10 +16,9 @@ def check_test_runner():
 
     if test_runner_setting == new_default:
         message = [
-            "You have not explicitly set 'TEST_RUNNER'. In Django 1.6,",
-            "there is a new test runner ('%s')" % new_default,
-            "by default. You should ensure your tests are still all",
-            "running & behaving as expected. See",
+            "Django 1.6 introduced a new test runner ('%s')," % new_default,
+            "changing the default test discovery behavior. You should ensure",
+            "your tests are still all running & behaving as expected. See",
             "https://docs.djangoproject.com/en/dev/releases/1.6/#discovery-of-tests-in-any-test-module",
             "for more information.",
         ]
@@ -62,3 +61,5 @@ def run_checks():
     ]
     # Filter out the ``None`` or empty strings.
     return [output for output in checks if output]
+
+run_checks.MIN_VERSION = (1, 6, 0)

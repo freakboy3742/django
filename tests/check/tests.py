@@ -39,7 +39,7 @@ class CompatChecksTestCase(TestCase):
     def test_check_test_runner_new_default(self):
         with self.settings(TEST_RUNNER='django.test.runner.DiscoverRunner'):
             result = django_1_6_0.check_test_runner()
-            self.assertTrue("You have not explicitly set 'TEST_RUNNER'" in result)
+            self.assertTrue("Django 1.6 introduced a new test runner" in result)
 
     def test_check_test_runner_overridden(self):
         with self.settings(TEST_RUNNER='myapp.test.CustomRunnner'):
@@ -49,7 +49,7 @@ class CompatChecksTestCase(TestCase):
         with self.settings(TEST_RUNNER='django.test.runner.DiscoverRunner'):
             result = django_1_6_0.run_checks()
             self.assertEqual(len(result), 1)
-            self.assertTrue("You have not explicitly set 'TEST_RUNNER'" in result[0])
+            self.assertTrue("Django 1.6 introduced a new test runner" in result[0])
 
     def test_run_checks_overridden(self):
         with self.settings(TEST_RUNNER='myapp.test.CustomRunnner'):
@@ -77,10 +77,25 @@ class CompatChecksTestCase(TestCase):
         with self.settings(TEST_RUNNER='django.test.runner.DiscoverRunner'):
             result = base.check_compatibility()
             self.assertEqual(len(result), 1)
-            self.assertTrue("You have not explicitly set 'TEST_RUNNER'" in result[0])
+            self.assertTrue("Django 1.6 introduced a new test runner" in result[0])
 
         with self.settings(TEST_RUNNER='myapp.test.CustomRunnner'):
             self.assertEqual(len(base.check_compatibility()), 0)
+
+        # A Django 1.6 project doesn't get any 1.6 warnings.
+        with self.settings(DJANGO_VERSION=(1, 6, 0)):
+            result = base.check_compatibility()
+            self.assertEqual(len(result), 0)
+
+        with self.settings(TEST_RUNNER='django.test.runner.DiscoverRunner', DJANGO_VERSION=(1, 6, 0)):
+            result = base.check_compatibility()
+            self.assertEqual(len(result), 0)
+
+        # A Django 1.6 prerelease project doesn't get any 1.6 warnings.
+        with self.settings(DJANGO_VERSION=(1, 6, 0, 'alpha', 1)):
+            result = base.check_compatibility()
+            self.assertEqual(len(result), 0)
+
 
     def test_check_compatibility_warning(self):
         # First, we're patching over the ``COMPAT_CHECKS`` with a stub which
@@ -121,7 +136,7 @@ class CompatChecksTestCase(TestCase):
             call_command('check')
 
         self.assertEqual(len(check.warnings._warnings), 1)
-        self.assertTrue("You have not explicitly set 'TEST_RUNNER'" in check.warnings._warnings[0])
+        self.assertTrue("Django 1.6 introduced a new test runner" in check.warnings._warnings[0])
 
         # Restore the ``warnings``.
         base.warnings = old_warnings
